@@ -3,6 +3,7 @@ const int THROTTLE = 0;
 const int YAW = 1;
 const int PITCH = 2;
 const int ROLL = 3; 
+int periods = 0;
 
 const int TLEFT = 0;
 const int TRIGHT = 1;
@@ -19,6 +20,8 @@ const int defs = 1470;
 const int maxs = 1960;
 const int deadzone = 5;
 const int period = 18220;
+const int frequency = 55;
+const int bfreqtwo = 62500;
 
 //VARS           T     Y     P     R
 int iPins [4] = {   2,    3,    4,    5 };
@@ -28,10 +31,9 @@ int pinnnum = 4;
 
 
 //OUTPUT VALUES   Tleft  Tright Rleft  Rright Eleft  Eright Aleft  Aright
-int oValsRaw [8] = {  mins,  mins,  defs,  defs,  defs,  defs,  defs,  defs};
+int oPinVals [8] = {  mins,  mins,  defs,  defs,  defs,  defs,  defs,  defs};
 const String oPinNames [8] = {"Tleft", "Tright", "Rleft", "Rright", "Eleft", "Eright", "Aleft", "Aright"};
 int oPins [8] = {23, 25, 27, 29, 31, 33, 35, 37};
-int oPinVals [8] = {0, 0, 125, 125, 125, 125, 125, 125};
 
 void setup() {
   for (int i=0; i<4; i++) {
@@ -41,24 +43,26 @@ void setup() {
   
   Serial.begin(115200);
   
-  
+  //oPinVals[TLEFT]
 }
 //TODO add if everythin is 0, lost connection
 void loop() {
   
   input();
-  //calc();
+  calc();
   
-  //printValSerial();
-  //printOutSerial();
-  scale();
-  Serial.println(oPinVals[0]);
-  //output();
+  printValSerial();
+  printOutSerial();
+  Serial.println(oPinVals[TLEFT]);
+  pwmWrite(5, oPinVals[TLEFT]);
 }
 
 void input(){
-  for (int i=0; i<4; i++) {
+  for (int i=0; i<3; i++) {// CHANGE TO 4
     vals[i] = pulseIn(iPins[i], HIGH);
+    if(i == 2){
+    periods = vals[i] + pulseIn(iPins[i], LOW);
+    }
   }
 }
 
@@ -70,43 +74,41 @@ void calc(){
   }
 
   //Throttle output
-  oValsRaw[TLEFT] = vals[THROTTLE] + diff[YAW] / 2;
-  oValsRaw[TRIGHT] = vals[THROTTLE] - diff[YAW] / 2;
+  oPinVals[TLEFT] = vals[THROTTLE] + diff[YAW] / 2;
+  oPinVals[TRIGHT] = vals[THROTTLE] - diff[YAW] / 2;
 
   if(diff[YAW] > deadzone) {
-    if (oValsRaw[TLEFT] > maxs) {
-      oValsRaw[TRIGHT] -= oValsRaw[TLEFT] - maxs;
-      oValsRaw[TLEFT] = maxs;
+    if (oPinVals[TLEFT] > maxs) {
+      oPinVals[TRIGHT] -= oPinVals[TLEFT] - maxs;
+      oPinVals[TLEFT] = maxs;
     }
-    else if (oValsRaw[TRIGHT] < mins) {
-      oValsRaw[TLEFT] += mins - oValsRaw[TRIGHT];
-      oValsRaw[TRIGHT] = mins;
+    else if (oPinVals[TRIGHT] < mins) {
+      oPinVals[TLEFT] += mins - oPinVals[TRIGHT];
+      oPinVals[TRIGHT] = mins;
     }
   }
 
   else if(diff[YAW] < -deadzone) {
-    if (oValsRaw[TRIGHT] > maxs) {
-      oValsRaw[TLEFT] -= oValsRaw[TRIGHT] - maxs;
-      oValsRaw[TRIGHT] = maxs;
+    if (oPinVals[TRIGHT] > maxs) {
+      oPinVals[TLEFT] -= oPinVals[TRIGHT] - maxs;
+      oPinVals[TRIGHT] = maxs;
     }
-    else if (oValsRaw[TLEFT] < mins) {
-      oValsRaw[TRIGHT] += mins - oValsRaw[TLEFT];
-      oValsRaw[TLEFT] = mins;
+    else if (oPinVals[TLEFT] < mins) {
+      oPinVals[TRIGHT] += mins - oPinVals[TLEFT];
+      oPinVals[TLEFT] = mins;
     }
   }
   
-  oValsRaw[2] = vals[YAW]; // rudders
-  oValsRaw[3] = vals[YAW];
-  oValsRaw[4] = vals[2]; // elevators
-  oValsRaw[5] = vals[2];
-  oValsRaw[6] = vals[3]; // ailerons
-  oValsRaw[7] = vals[3];
+  oPinVals[2] = vals[YAW]; // rudders
+  oPinVals[3] = vals[YAW];
+  oPinVals[4] = vals[2]; // elevators
+  oPinVals[5] = vals[2];
+  oPinVals[6] = vals[3]; // ailerons
+  oPinVals[7] = vals[3];
 }
 void scale(){
   for(int i = 0; i < 1; i++){ // CHANGE TO 8
-    long v = oValsRaw[i] - mins;
-    v = v*255;
-    v  = v / (maxs - mins);
+    long v = long(oPinVals[i]) * 255 / period;
     oPinVals[i] = v;
   }
   
@@ -121,6 +123,9 @@ void printValSerial(){
   Serial.println(vals[PITCH]);
   Serial.print("R  ");
   Serial.println(vals[ROLL]);
+  Serial.print("Period   ");
+  Serial.println(periods);
+  
 }
 
 void printOutSerial(){
@@ -128,15 +133,10 @@ void printOutSerial(){
   for (int i=0; i<8; i++) {
     Serial.print(oPinNames[i]);
     Serial.print(" ");
-    Serial.println(oValsRaw[i]);
+    Serial.println(oPinVals[i]);
   }
 }
-void output(){
-  analogWrite(oPins[TLEFT], oPinVals[TLEFT]);
-  Serial.print("Output:   ");
-  Serial.println(oPinVals[TLEFT]);
-  //analogWrite(oPins[TRIGHT], oPinVals[TRIGHT]);
-}
+
 /*void rising() {
   attachInterrupt(0, falling, FALLING);
   prev_time = micros();
@@ -165,3 +165,11 @@ Roll left: 987
 RK (CH 5) right:1958
 LK (CH 6)
 */
+
+void pwmWrite(int pin, int value){
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(value); // Approximately 10% duty cycle @ 1KHz
+  digitalWrite(pin, LOW);
+  delayMicroseconds(period);
+}
+
