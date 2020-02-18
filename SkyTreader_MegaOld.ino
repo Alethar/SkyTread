@@ -21,7 +21,6 @@ const int maxs = 1960;
 const int deadzone = 5;
 const int period = 18220;
 const int frequency = 55;
-const int bfreqtwo = 62500;
 
 //VARS           T     Y     P     R
 int iPins [4] = {   2,    3,    4,    5 };
@@ -54,7 +53,7 @@ void loop() {
   printValSerial();
   printOutSerial();
   Serial.println(oPinVals[TLEFT]);
-  pwmWrite(5, oPinVals[TLEFT]);
+  pwmWriteTest();
 }
 
 void input(){
@@ -70,7 +69,7 @@ void calc(){
   //Calculating differential thrust
   diff[THROTTLE] = vals[THROTTLE] - mins;
   for(int i = 1; i < 4; i++){
-    diff[i] = vals[i] - defs;
+    diff[i] = vals[i] - ddiefs;
   }
 
   //Throttle output
@@ -148,6 +147,42 @@ void falling() {
   Serial.println(pwm_value);
 }*/
 
+void pwmWrite(){ // Takes one period to write to all pins , (18220 ms)
+  for(int i = 0; i < 8; i++) { // Sets everything to high at beginning
+    digitalWrite(oPins[i], HIGH);
+  }
+  
+  int counter = 0;
+  int index = 0;
+  for (int i=0; i<8; i++) {
+    int tempcounter = 99999;
+    int tempindex = 0;
+    for(int j = 0; j < 8; j++){
+      if(oPinVals[j] < tempcounter){
+        tempcounter = oPinVals[j];
+        tempindex = j;
+      }
+    }
+    counter = tempcounter - counter;
+    oPinVals[index] = 32767;
+    delayMicroseconds(counter);
+    digitalWrite(index, LOW);
+  }
+  delayMicroseconds(period - counter);
+}
+void pwmWriteTest(){
+  digitalWrite(4, HIGH);
+  delayMicroseconds(oPinVals[TLEFT] * 3);
+  digitalWrite(4, LOW);
+  delayMicroseconds(period-oPinVals[TLEFT]);
+}
+
+
+
+
+
+
+
 /*
 NOTE: MAY ONLY NEED TO SETTLE ON tick based, no need for interrupt
 Throttle minimum: 984 CH 3
@@ -165,11 +200,3 @@ Roll left: 987
 RK (CH 5) right:1958
 LK (CH 6)
 */
-
-void pwmWrite(int pin, int value){
-  digitalWrite(pin, HIGH);
-  delayMicroseconds(value); // Approximately 10% duty cycle @ 1KHz
-  digitalWrite(pin, LOW);
-  delayMicroseconds(period);
-}
-
