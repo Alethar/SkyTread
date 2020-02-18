@@ -1,0 +1,49 @@
+// Throttle Yaw Pitch Roll
+const int THROTTLE = 0;
+const int YAW = 1;
+const int PITCH = 2;
+const int ROLL = 3; 
+const int VRA = 4;
+const int VRB = 5;
+int iPins [6] = {   2,    4,    7,    8,   12,  13 };
+int vals [4] = { mins, defs, defs, defs };
+int oPins[6] = {    3,    5,    6,    9,   10,  11 };
+int oPinVals[6] = {   0,    0,    0,    0,    0,    0};
+
+void setup() {
+  for (int i=0; i<6; i++) {
+    pinMode(iPins[i], INPUT);
+    pinMode(oPins[i], OUTPUT);
+  }
+  
+  Serial.begin(115200);
+}
+
+void loop {
+  input();
+  scale();
+  relay();
+}
+
+void input(){
+  for (int i=0; i<3; i++) {// CHANGE TO 4
+    vals[i] = pulseIn(iPins[i], HIGH);
+    if(i == 2){
+    periods = vals[i] + pulseIn(iPins[i], LOW);
+    }
+  }
+}
+
+void scale(){
+  for(int i = 0; i < 6; i++){ // CHANGE TO 8
+    long v = long(oPinVals[i]) * 256 / period;
+    oPinVals[i] = v;
+  }
+  
+}
+
+void relay() {
+  for (int i=0; i<6; i++) {
+    analogWrite(oPins[i], oPinVals[i]);
+  }
+}
