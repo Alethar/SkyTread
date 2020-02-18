@@ -5,10 +5,16 @@ const int PITCH = 2;
 const int ROLL = 3; 
 const int VRA = 4;
 const int VRB = 5;
+const int mins = 980;
+const int defs = 1470;
+const int maxs = 1960;
+const int period = 18220;
 int iPins [6] = {   2,    4,    7,    8,   12,  13 };
 int vals [4] = { mins, defs, defs, defs };
 int oPins[6] = {    3,    5,    6,    9,   10,  11 };
 int oPinVals[6] = {   0,    0,    0,    0,    0,    0};
+
+
 
 void setup() {
   for (int i=0; i<6; i++) {
@@ -19,7 +25,7 @@ void setup() {
   Serial.begin(115200);
 }
 
-void loop {
+void loop(){
   input();
   scale();
   relay();
@@ -28,9 +34,9 @@ void loop {
 void input(){
   for (int i=0; i<3; i++) {// CHANGE TO 4
     vals[i] = pulseIn(iPins[i], HIGH);
-    if(i == 2){
-    periods = vals[i] + pulseIn(iPins[i], LOW);
-    }
+    //if(i == 2){
+    //periods = vals[i] + pulseIn(iPins[i], LOW);
+    //}
   }
 }
 
