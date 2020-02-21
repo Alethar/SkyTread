@@ -15,11 +15,11 @@ CH 1 - Yaw, right stick X
 // Note: may switch Roll and Yaw channels
 
 Purpose: 
--Link throttle to both ESCs (right EDF and left EDF)
+-Link throttle to both ESCs (right EDF and left EDF) FINISHED nvm (now has bugs)
 
--Set up differential thrust
+-Set up differential thrust   FINISHED
 
--Set up servo bindings
+-Set up servo bindings UNTESTED
 
 -Later, set up gyroscope and PID balancing code
 
