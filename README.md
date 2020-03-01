@@ -25,3 +25,22 @@ Purpose:
 
 -Integration of Ardupilot? Auto flight and GPS/mapping? Camera gimbal? future plans
 
+
+
+
+TODO Reminder List:
+1. Set up binding code
+  -remove jank binding code from megaout 
+  -setup binding code for megain
+  -tune default values for megaout
+2. Create relay confirmation system
+  -megain assigns value from 0 to 4 for each value
+  -add prev values
+  -if curr values diff to prev values by deadzone amount, do not increment checkval
+  -else increment checkval, set prev values to curr values
+  -megaout reads checkval vars before reading vals
+  -if checkval diff from current checkcal val, check vals
+  -else do not
+  -MAKE SURE TO BRANCH
+3. Fix pwm output and motor differential
+4. Test and tune servo output
