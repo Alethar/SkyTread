@@ -1,4 +1,10 @@
 # SkyTreader
+
+
+1st priority: COMPLETELY REVAMP CODE/SIMPLIFY CIRCUIT
+
+
+
 __3D Files__
 https://myhub.autodesk360.com/ue2c047eb/g/projects/20190515194007701/data/dXJuOmFkc2sud2lwcHJvZDpmcy5mb2xkZXI6Y28uWHpNNE00Z1VUa0t4cF8xX2l4cllmZw
 TODO: upload files directly to github
